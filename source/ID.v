@@ -7,12 +7,12 @@ module id(
          input wire[`InstAddrBus]   pc_i,
          input wire[`InstBus]       inst_i,
 
-         //澶勪簬鎵ц闃舵鐨勬寚浠よ鍐欏叆鐨勭洰鐨勫瘎瀛樺櫒淇℃伅
+         //处于执行阶段的指令要写入的目的寄存器信息
          input wire                 ex_wreg_i,
          input wire[`RegDataBus]        ex_wdata_i,
          input wire[`RegAddrBus]    ex_wd_i,
 
-         //澶勪簬璁垮瓨闃舵鐨勬寚浠よ鍐欏叆鐨勭洰鐨勫瘎瀛樺櫒淇℃伅
+         //处于访存阶段的指令要写入的目的寄存器信息
          input wire                    mem_wreg_i,
          input wire[`RegDataBus]           mem_wdata_i,
          input wire[`RegAddrBus]       mem_wd_i,
@@ -20,13 +20,13 @@ module id(
          input wire[`RegDataBus]           reg1_data_i,
          input wire[`RegDataBus]           reg2_data_i,
 
-         //閫佸埌regfile鐨勪俊鎭?
+         //送到regfile的信息
          output reg                    reg1_read_o,
          output reg                    reg2_read_o,
          output reg[`RegAddrBus]       reg1_addr_o,
          output reg[`RegAddrBus]       reg2_addr_o,
 
-         //閫佸埌鎵ц闃舵鐨勪俊鎭?
+         //送到执行阶段的信息
          output reg[`AluOpBus]         aluop_o,
          output reg[`AluSelBus]        alusel_o,
          output reg[`RegDataBus]       reg1_data_o,
@@ -42,6 +42,7 @@ wire[5:0] seg_func = inst_i[5:0];
 wire[`EXT_OP_LENGTH  - 1:0] ext_op;
 wire[`RegDataBus] imm_extended;
 assign ext_op = (op==`EXE_ORI||op==`EXE_ANDI||op==`EXE_XORI)?`EXT_OP_UNSIGNED:
+       (op==`EXE_ADDI||op==`EXE_ADDIU)?`EXT_OP_SIGNED:
        (op==`EXE_LUI)?`EXT_OP_SFT16:`EXT_OP_DEFAULT;
 extend ext0(
          .imm_i(inst_i[15:0]),
@@ -158,6 +159,90 @@ always @ (*)
                           reg2_read_o <= 1'b1;
                           instvalid <= `InstValid;
                         end
+                      `EXE_MOVN:
+                        begin
+                          if(reg2_data_o != `ZeroWord)
+                            begin
+                              wreg_enable_o <= `WriteEnable;
+                            end
+                          else
+                            begin
+                              wreg_enable_o <= `WriteDisable;
+                            end
+                          aluop_o<=`EXE_MOVN_OP;
+                          alusel_o <= `EXE_RES_MOVE;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b0;
+                        end
+                      `EXE_MOVZ:
+                        begin
+                          if(reg2_data_o != `ZeroWord)
+                            begin
+                              wreg_enable_o <= `WriteDisable;
+                            end
+                          else
+                            begin
+                              wreg_enable_o <= `WriteEnable;
+                            end
+                          aluop_o<=`EXE_MOVN_OP;
+                          alusel_o <= `EXE_RES_MOVE;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b0;
+                        end
+                      `EXE_ADD:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_ADD_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
+                      `EXE_ADDU:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_ADDU_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
+                      `EXE_SUB:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_SUB_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
+                      `EXE_SUBU:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_SUBU_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
+                      `EXE_SLT:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_SLT_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
+                      `EXE_SLTU:
+                        begin
+                          wreg_enable_o <= `WriteEnable;
+                          aluop_o <= `EXE_SLTU_OP;
+                          alusel_o <= `EXE_RES_ARITHMETIC;
+                          reg1_read_o <= 1'b1;
+                          reg2_read_o <= 1'b1;
+                          instvalid <= `InstValid;
+                        end
                       default:
                         begin
                         end
@@ -169,7 +254,7 @@ always @ (*)
               endcase
             end
           `EXE_ORI:
-            begin                        //ORI鎸囦护
+            begin                        //ORI指令
               wreg_enable_o <= `WriteEnable;
               aluop_o <= `EXE_OR_OP;
               alusel_o <= `EXE_RES_LOGIC;
@@ -221,8 +306,53 @@ always @ (*)
               reg2_read_o <= 1'b0;
               instvalid <= `InstValid;
             end
-          default:
+          `EXE_ADDI:
+            begin                        //ADDI指令
+              wreg_enable_o <= `WriteEnable;
+              aluop_o <= `EXE_ADDI_OP;
+              alusel_o <= `EXE_RES_ARITHMETIC;
+              reg1_read_o <= 1'b1;
+              reg2_read_o <= 1'b0;
+              imm <= imm_extended;
+              wreg_addr_o <= inst_i[20:16];
+              instvalid <= `InstValid;
+            end
+          `EXE_ADDIU:
+            begin                        //ADDIU指令
+              wreg_enable_o <= `WriteEnable;
+              aluop_o <= `EXE_ADDIU_OP;
+              alusel_o <= `EXE_RES_ARITHMETIC;
+              reg1_read_o <= 1'b1;
+              reg2_read_o <= 1'b0;
+              imm <= imm_extended;
+              wreg_addr_o <= inst_i[20:16];
+              instvalid <= `InstValid;
+            end
+          `EXE_SPECIAL2_INST:
             begin
+              case(seg_func)
+                `EXE_CLZ:
+                  begin
+                    wreg_enable_o <= `WriteEnable;
+                    aluop_o <= `EXE_CLZ_OP;
+                    alusel_o<= `EXE_RES_ARITHMETIC;
+                    reg1_read_o <= 1'b1;
+                    reg2_read_o <= 1'b0;
+                    instvalid <= `InstValid;
+                  end
+                `EXE_CLO:
+                  begin
+                    wreg_enable_o <= `WriteEnable;
+                    aluop_o <= `EXE_CLO_OP;
+                    alusel_o<= `EXE_RES_ARITHMETIC;
+                    reg1_read_o <= 1'b1;
+                    reg2_read_o <= 1'b0;
+                    instvalid <= `InstValid;
+                  end
+                default:
+                  begin
+                  end
+              endcase
             end
         endcase    //case op
 
@@ -262,7 +392,6 @@ always @ (*)
                 instvalid <= `InstValid;
               end
           end
-
       end       //if
   end         //always
 
@@ -274,12 +403,12 @@ always @ (*)
         reg1_data_o <= `ZeroWord;
       end
     else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
-          && (ex_wd_i == reg1_addr_o))
+            && (ex_wd_i == reg1_addr_o))
       begin
-         reg1_data_o <= ex_wdata_i;
+        reg1_data_o <= ex_wdata_i;
       end
     else if((reg1_read_o == 1'b1) && (mem_wreg_i == 1'b1)
-           && (mem_wd_i == reg1_addr_o))
+            && (mem_wd_i == reg1_addr_o))
       begin
         reg1_data_o <= mem_wdata_i;
       end

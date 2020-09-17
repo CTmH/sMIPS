@@ -9,9 +9,9 @@ module extend(
        );
 
 
-// 不能用case而要用这种选择逻辑似乎
+// ������case��Ҫ������ѡ���߼��ƺ�
 assign imm_o =
-       (ext_op_i == `EXT_OP_SFT16) ? {imm_i, 16'b0} :            // LUI等指令
-       (ext_op_i == `EXT_OP_SIGNED) ? {{16{imm_i[15]}}, imm_i} : // ADDIU等的符号扩展
-       {16'b0, imm_i};                                            // LW, SW等的无符号扩展
+       (ext_op_i == `EXT_OP_SFT16) ? {imm_i, 16'b0} :            // LUI��ָ��
+       (ext_op_i == `EXT_OP_SIGNED) ? {{16{imm_i[15]}}, imm_i} : // ADDIU�ȵķ�����չ
+       {16'b0, imm_i};                                            // LW, SW�ȵ��޷�����չ
 endmodule

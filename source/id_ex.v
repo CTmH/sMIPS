@@ -7,7 +7,7 @@ module id_ex(
 	input wire										rst,
 
 	
-	//ä»è¯‘ç é˜¶æ®µä¼ é€’çš„ä¿¡æ¯
+	//´ÓÒëÂë½×¶Î´«µİµÄĞÅÏ¢
 	input wire[`AluOpBus]         id_aluop,
 	input wire[`AluSelBus]        id_alusel,
 	input wire[`RegDataBus]           id_reg1,
@@ -15,7 +15,7 @@ module id_ex(
 	input wire[`RegAddrBus]       id_wreg_addr,
 	input wire                    id_wreg_enable,	
 	
-	//ä¼ é€’åˆ°æ‰§è¡Œé˜¶æ®µçš„ä¿¡æ¯
+	//´«µİµ½Ö´ĞĞ½×¶ÎµÄĞÅÏ¢
 	output reg[`AluOpBus]         ex_aluop,
 	output reg[`AluSelBus]        ex_alusel,
 	output reg[`RegDataBus]           ex_reg1,

@@ -5,12 +5,12 @@ module mem(
 
 	input wire										rst,
 	
-	//æ¥è‡ªæ‰§è¡Œé˜¶æ®µçš„ä¿¡æ¯	
+	//À´×ÔÖ´ĞĞ½×¶ÎµÄĞÅÏ¢	
 	input wire[`RegAddrBus]       wreg_addr_i,
 	input wire                    wreg_enable_i,
 	input wire[`RegDataBus]					  wdata_i,
 	
-	//é€åˆ°å›å†™é˜¶æ®µçš„ä¿¡æ¯
+	//ËÍµ½»ØĞ´½×¶ÎµÄĞÅÏ¢
 	output reg[`RegAddrBus]      wreg_addr_o,
 	output reg                   wreg_enable_o,
 	output reg[`RegDataBus]					 wdata_o

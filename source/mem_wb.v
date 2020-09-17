@@ -7,12 +7,12 @@ module mem_wb(
 	input wire										rst,
 	
 
-	//æ¥è‡ªè®¿å­˜é˜¶æ®µçš„ä¿¡æ¯	
+	//À´×Ô·Ã´æ½×¶ÎµÄĞÅÏ¢	
 	input wire[`RegAddrBus]       mem_wreg_addr,
 	input wire                    mem_wreg_enable,
 	input wire[`RegDataBus]					 mem_wdata,
 
-	//é€åˆ°å›å†™é˜¶æ®µçš„ä¿¡æ¯
+	//ËÍµ½»ØĞ´½×¶ÎµÄĞÅÏ¢
 	output reg[`RegAddrBus]      wb_wreg_addr,
 	output reg                   wb_wreg_enable,
 	output reg[`RegDataBus]					 wb_wdata	       

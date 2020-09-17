@@ -1,4 +1,4 @@
-//å…¨å±€
+//È«¾Ö
 `define RstEnable 1'b1
 `define RstDisable 1'b0
 `define ZeroWord 32'h00000000
@@ -26,7 +26,7 @@
 `define ChipDisable 1'b0
 
 
-//æŒ‡ä»¤
+//Ö¸Áî
 `define EXE_AND  6'b100100
 `define EXE_OR   6'b100101
 `define EXE_XOR 6'b100110
@@ -45,8 +45,8 @@
 `define EXE_SYNC  6'b001111
 `define EXE_PREF  6'b110011
 
-`define EXE_MOVZ  6'b001010
 `define EXE_MOVN  6'b001011
+`define EXE_MOVZ  6'b001010
 `define EXE_MFHI  6'b010000
 `define EXE_MTHI  6'b010001
 `define EXE_MFLO  6'b010010
@@ -128,14 +128,14 @@
 `define EXE_REGIMM_INST 6'b000001
 `define EXE_SPECIAL2_INST 6'b011100
 
-// æ‰©å±•æ¨¡å—
+// À©Õ¹Ä£¿é
 `define EXT_OP_LENGTH   2          // Length of Signal ExtOp
 `define EXT_OP_DEFAULT  2'b00      // ExtOp default value
 `define EXT_OP_SFT16    2'b01      // LUI: Shift Left 16
 `define EXT_OP_SIGNED   2'b10      // ADDIU: `imm16` signed extended to 32 bit
 `define EXT_OP_UNSIGNED 2'b11      // LW, SW: `imm16` unsigned extended to 32 bit
 
-// NPCæ¨¡å—
+// NPCÄ£¿é
 `define NPC_OP_LENGTH   3          // Length of NPCOp
 `define NPC_OP_DEFAULT  3'b000     // NPCOp default value
 `define NPC_OP_NEXT     3'b001     // Next instruction: {PC + 4}
@@ -255,20 +255,20 @@
 `define EXE_RES_NOP 3'b000
 
 
-//æŒ‡ä»¤å­˜å‚¨å™¨inst_rom
+//Ö¸Áî´æ´¢Æ÷inst_rom
 `define InstAddrBus 31:0
 `define InstBus 31:0
 `define InstMemNum 131071
 `define InstMemNumLog2 17
 
-//æ•°æ®å­˜å‚¨å™¨data_ram
+//Êı¾İ´æ´¢Æ÷data_ram
 `define DataAddrBus 31:0
 `define DataBus 31:0
 `define DataMemNum 131071
 `define DataMemNumLog2 17
 `define ByteWidth 7:0
 
-//é€šç”¨å¯„å­˜å™¨regfile
+//Í¨ÓÃ¼Ä´æÆ÷regfile
 `define RegAddrBus 4:0
 `define RegDataBus 31:0
 `define RegWidth 32
@@ -278,7 +278,7 @@
 `define RegNumLog2 5
 `define NOPRegAddr 5'b00000
 
-//é™¤æ³•div
+//³ı·¨div
 `define DivFree 2'b00
 `define DivByZero 2'b01
 `define DivOn 2'b10
@@ -288,11 +288,11 @@
 `define DivStart 1'b1
 `define DivStop 1'b0
 
-//CP0å¯„å­˜å™¨åœ°å€
-`define CP0_REG_COUNT    5'b01001        //å¯è¯»å†™
-`define CP0_REG_COMPARE    5'b01011      //å¯è¯»å†™
-`define CP0_REG_STATUS    5'b01100       //å¯è¯»å†™
-`define CP0_REG_CAUSE    5'b01101        //åªè¯»
-`define CP0_REG_EPC    5'b01110          //å¯è¯»å†™
-`define CP0_REG_PrId    5'b01111         //åªè¯»
-`define CP0_REG_CONFIG    5'b10000       //åªè¯»
+//CP0¼Ä´æÆ÷µØÖ·
+`define CP0_REG_COUNT    5'b01001        //¿É¶ÁĞ´
+`define CP0_REG_COMPARE    5'b01011      //¿É¶ÁĞ´
+`define CP0_REG_STATUS    5'b01100       //¿É¶ÁĞ´
+`define CP0_REG_CAUSE    5'b01101        //Ö»¶Á
+`define CP0_REG_EPC    5'b01110          //¿É¶ÁĞ´
+`define CP0_REG_PrId    5'b01111         //Ö»¶Á
+`define CP0_REG_CONFIG    5'b10000       //Ö»¶Á
