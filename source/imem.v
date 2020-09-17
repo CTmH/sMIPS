@@ -28,6 +28,11 @@ module imem(
 
 reg[`InstBus]  inst_mem[0:`InstMemNum-1];
 
+initial begin
+    $readmemb("C:/Users/like/vivado/data/imem.txt",inst_mem);
+end
+
+
 always @ (*)
   //   begin
   //     if (ce == `ChipDisable)

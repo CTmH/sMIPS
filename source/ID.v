@@ -7,26 +7,26 @@ module id(
          input wire[`InstAddrBus]   pc_i,
          input wire[`InstBus]       inst_i,
 
-         //  //处于执行阶段的指令要写入的目的寄存器信息
-         //  input wire                 ex_wreg_i,
-         //  input wire[`RegDataBus]        ex_wdata_i,
-         //  input wire[`RegAddrBus]    ex_wd_i,
+         //处于执行阶段的指令要写入的目的寄存器信息
+         input wire                 ex_wreg_i,
+         input wire[`RegDataBus]        ex_wdata_i,
+         input wire[`RegAddrBus]    ex_wd_i,
 
-         //  //处于访存阶段的指令要写入的目的寄存器信息
-         //  input wire                    mem_wreg_i,
-         //  input wire[`RegDataBus]           mem_wdata_i,
-         //  input wire[`RegAddrBus]       mem_wd_i,
+         //处于访存阶段的指令要写入的目的寄存器信息
+         input wire                    mem_wreg_i,
+         input wire[`RegDataBus]           mem_wdata_i,
+         input wire[`RegAddrBus]       mem_wd_i,
 
          input wire[`RegDataBus]           reg1_data_i,
          input wire[`RegDataBus]           reg2_data_i,
 
-         //送到regfile的信息
+         //送到regfile的信�?
          output reg                    reg1_read_o,
          output reg                    reg2_read_o,
          output reg[`RegAddrBus]       reg1_addr_o,
          output reg[`RegAddrBus]       reg2_addr_o,
 
-         //送到执行阶段的信息
+         //送到执行阶段的信�?
          output reg[`AluOpBus]         aluop_o,
          output reg[`AluSelBus]        alusel_o,
          output reg[`RegDataBus]       reg1_data_o,
@@ -273,16 +273,16 @@ always @ (*)
       begin
         reg1_data_o <= `ZeroWord;
       end
-    // else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
-    //         && (ex_wd_i == reg1_addr_o))
-    //   begin
-    //     reg1_data_o <= ex_wdata_i;
-    //   end
-    // else if((reg1_read_o == 1'b1) && (mem_wreg_i == 1'b1)
-    //         && (mem_wd_i == reg1_addr_o))
-    //   begin
-    //     reg1_data_o <= mem_wdata_i;
-    //   end
+    else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
+          && (ex_wd_i == reg1_addr_o))
+      begin
+         reg1_data_o <= ex_wdata_i;
+      end
+    else if((reg1_read_o == 1'b1) && (mem_wreg_i == 1'b1)
+           && (mem_wd_i == reg1_addr_o))
+      begin
+        reg1_data_o <= mem_wdata_i;
+      end
     else if(reg1_read_o == 1'b1)
       begin
         reg1_data_o <= reg1_data_i;
@@ -303,16 +303,16 @@ always @ (*)
       begin
         reg2_data_o <= `ZeroWord;
       end
-    // else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1)
-    //         && (ex_wd_i == reg2_addr_o))
-    //   begin
-    //     reg2_data_o <= ex_wdata_i;
-    //   end
-    // else if((reg2_read_o == 1'b1) && (mem_wreg_i == 1'b1)
-    //         && (mem_wd_i == reg2_addr_o))
-    //   begin
-    //     reg2_data_o <= mem_wdata_i;
-    //   end
+    else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1)
+            && (ex_wd_i == reg2_addr_o))
+      begin
+        reg2_data_o <= ex_wdata_i;
+      end
+    else if((reg2_read_o == 1'b1) && (mem_wreg_i == 1'b1)
+            && (mem_wd_i == reg2_addr_o))
+      begin
+        reg2_data_o <= mem_wdata_i;
+      end
     else if(reg2_read_o == 1'b1)
       begin
         reg2_data_o <= reg2_data_i;
