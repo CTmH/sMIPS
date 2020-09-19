@@ -20,6 +20,9 @@ module id(
          input wire[`RegDataBus]           reg1_data_i,
          input wire[`RegDataBus]           reg2_data_i,
 
+         //如果上一条指令是转移指令，那么下一条指令在译码的时候is_in_delayslot为true
+         input wire                    is_in_delayslot_i,
+
          //送到regfile的信息
          output reg                    reg1_read_o,
          output reg                    reg2_read_o,
@@ -32,12 +35,18 @@ module id(
          output reg[`RegDataBus]       reg1_data_o,
          output reg[`RegDataBus]       reg2_data_o,
          output reg[`RegAddrBus]       wreg_addr_o,
-         output reg                    wreg_enable_o
+         output reg                    wreg_enable_o,
+
+         output reg                    next_inst_in_delayslot_o,	
+         output reg[`NPC_OP_LENGTH  - 1:0]    cu_npc_op_o,     
+         output reg[`RegDataBus]       link_addr_o,
+          output reg                    is_in_delayslot_o
        );
 
 wire[5:0] op = inst_i[31:26];
 wire[4:0] seg_sa = inst_i[10:6];
 wire[5:0] seg_func = inst_i[5:0];
+wire[4:0] seg_rt = inst_i[20:16];
 
 wire[`EXT_OP_LENGTH  - 1:0] ext_op;
 wire[`RegDataBus] imm_extended;
@@ -53,6 +62,9 @@ extend ext0(
 reg[`RegDataBus] imm;
 reg instvalid;
 
+wire[`RegDataBus] pc_plus_8;
+assign pc_plus_8 = pc_i + 8;   //保存当前译码指令后面第2条指令的地址
+
 always @ (*)
   begin
     if (rst == `RstEnable)
@@ -67,6 +79,9 @@ always @ (*)
         reg1_addr_o <= `NOPRegAddr;
         reg2_addr_o <= `NOPRegAddr;
         imm <= 32'h0;
+        link_addr_o <= `ZeroWord;
+        cu_npc_op_o <= `NPC_OP_NEXT;
+        next_inst_in_delayslot_o <= `NotInDelaySlot;
       end
     else
       begin
@@ -80,6 +95,9 @@ always @ (*)
         reg1_addr_o <= inst_i[25:21];
         reg2_addr_o <= inst_i[20:16];
         imm <= `ZeroWord;
+        link_addr_o <= `ZeroWord;
+        cu_npc_op_o <= `NPC_OP_NEXT;	
+        next_inst_in_delayslot_o <= `NotInDelaySlot;
         case (op)
           `EXE_SPECIAL_INST:
             begin
@@ -159,6 +177,30 @@ always @ (*)
                           reg2_read_o <= 1'b1;
                           instvalid <= `InstValid;
                         end
+                     `EXE_JR: 
+                        begin
+	                      wreg_enable_o <= `WriteDisable;		
+	                      aluop_o <= `EXE_JR_OP;
+	                      alusel_o <= `EXE_RES_JUMP_BRANCH;   
+		  				  reg1_read_o <= 1'b1;	
+		  				  reg2_read_o <= 1'b0;
+		  				  link_addr_o <= `ZeroWord;		  						
+			              cu_npc_op_o <= `NPC_OP_RS;		           
+			              next_inst_in_delayslot_o <= `InDelaySlot;
+			              instvalid <= `InstValid;	
+						end
+	                  `EXE_JALR: 
+					    begin
+						  wreg_enable_o <= `WriteEnable;		
+						  aluop_o <= `EXE_JALR_OP;
+		  				  alusel_o <= `EXE_RES_JUMP_BRANCH;   
+		  				  reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;
+		  				  wreg_addr_o <= inst_i[15:11];
+		  				  link_addr_o <= pc_plus_8;		  						
+			              cu_npc_op_o <= `NPC_OP_RS;			           
+			              next_inst_in_delayslot_o <= `InDelaySlot;
+			              instvalid <= `InstValid;	
+					    end
                       `EXE_MOVN:
                         begin
                           if(reg2_data_o != `ZeroWord)
@@ -306,6 +348,155 @@ always @ (*)
               reg2_read_o <= 1'b0;
               instvalid <= `InstValid;
             end
+          `EXE_J:			
+            begin
+		  	  wreg_enable_o <= `WriteDisable;		
+		  	  aluop_o <= `EXE_J_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b0;	
+		  	  reg2_read_o <= 1'b0;
+		  	  link_addr_o <= `ZeroWord;
+			  cu_npc_op_o <= `NPC_OP_JUMP;
+			  next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  instvalid <= `InstValid;	
+			end
+		  `EXE_JAL:			
+		    begin
+		  	  wreg_enable_o <= `WriteEnable;		
+		  	  aluop_o <= `EXE_JAL_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b0;	
+		  	  reg2_read_o <= 1'b0;
+		  	  wreg_addr_o <= 5'b11111;	
+		  	  link_addr_o <= pc_plus_8 ;
+			  cu_npc_op_o <= `NPC_OP_JUMP;
+			  next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  instvalid <= `InstValid;	
+		    end
+		  `EXE_BEQ:			
+		    begin
+		  	  wreg_enable_o <= `WriteDisable;		
+		  	  aluop_o <= `EXE_BEQ_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b1;	
+		  	  reg2_read_o <= 1'b1;
+		  	  instvalid <= `InstValid;	
+		  	  if(reg1_data_o == reg2_data_o) 
+		  	  begin
+			    cu_npc_op_o <= `NPC_OP_OFFSET;
+			    next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  end
+			end
+		  `EXE_BGTZ:			
+		    begin
+		  	  wreg_enable_o <= `WriteDisable;		
+		  	  aluop_o <= `EXE_BGTZ_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b1;	
+		  	  reg2_read_o <= 1'b0;
+		  	  instvalid <= `InstValid;	
+		  	  if((reg1_data_o[31] == 1'b0) && (reg1_data_o != `ZeroWord)) 
+		  	  begin
+			    cu_npc_op_o <= `NPC_OP_OFFSET;
+			    next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  end
+			end
+		  `EXE_BLEZ:			
+		    begin
+		  	  wreg_enable_o <= `WriteDisable;		
+		  	  aluop_o <= `EXE_BLEZ_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b1;	
+		  	  reg2_read_o <= 1'b0;
+		  	  instvalid <= `InstValid;	
+		  	  if((reg1_data_o[31] == 1'b1) || (reg1_data_o == `ZeroWord)) 
+		  	  begin
+			    cu_npc_op_o <= `NPC_OP_OFFSET;
+			    next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  end
+			end
+		  `EXE_BNE:			
+		    begin
+		  	  wreg_enable_o <= `WriteDisable;		
+		  	  aluop_o <= `EXE_BLEZ_OP;
+		  	  alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  	  reg1_read_o <= 1'b1;	
+		  	  reg2_read_o <= 1'b1;
+		  	  instvalid <= `InstValid;	
+		  	  if(reg1_data_o != reg2_data_o) 
+		  	  begin
+			    cu_npc_op_o <= `NPC_OP_OFFSET;
+			    next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			  end
+			end
+		  `EXE_REGIMM_INST:		
+		    begin
+			  case (seg_rt)
+			    `EXE_BGEZ:	
+			      begin
+				    wreg_enable_o <= `WriteDisable;		
+				    aluop_o <= `EXE_BGEZ_OP;
+		  			alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  			reg1_read_o <= 1'b1;	
+		  			reg2_read_o <= 1'b0;
+		  			instvalid <= `InstValid;	
+		  			if(reg1_data_o[31] == 1'b0) 
+		  			begin
+			    		cu_npc_op_o <= `NPC_OP_OFFSET;
+			    		next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			   		end
+				  end
+				`EXE_BGEZAL:		
+				  begin
+					wreg_enable_o <= `WriteEnable;		
+					aluop_o <= `EXE_BGEZAL_OP;
+		  			alusel_o <= `EXE_RES_JUMP_BRANCH;
+		  			reg1_read_o <= 1'b1;
+		  			reg2_read_o <= 1'b0;
+		  			link_addr_o <= pc_plus_8; 
+		  			wreg_addr_o <= 5'b11111;  	
+		  			instvalid <= `InstValid;
+		  			if(reg1_data_o[31] == 1'b0) 
+		  			begin
+			    	  cu_npc_op_o <= `NPC_OP_OFFSET;
+			    	  next_inst_in_delayslot_o <= `InDelaySlot;
+			   		end
+				  end
+				`EXE_BLTZ:		
+				  begin
+				    wreg_enable_o <= `WriteDisable;		
+				    aluop_o <= `EXE_BGEZAL_OP;
+		  			alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  			reg1_read_o <= 1'b1;	
+		  			reg2_read_o <= 1'b0;
+		  			instvalid <= `InstValid;	
+		  			if(reg1_data_o[31] == 1'b1) 
+		  			begin
+			    	  cu_npc_op_o <= `NPC_OP_OFFSET;
+			    	  next_inst_in_delayslot_o <= `InDelaySlot;		  	
+			   		end
+				  end 
+				`EXE_BLTZAL:		
+				  begin
+				    wreg_enable_o <= `WriteEnable;		
+				    aluop_o <= `EXE_BGEZAL_OP;
+		  			alusel_o <= `EXE_RES_JUMP_BRANCH; 
+		  			reg1_read_o <= 1'b1;	
+		  			reg2_read_o <= 1'b0;
+		  			link_addr_o <= pc_plus_8;	
+		  			wreg_addr_o <= 5'b11111; 
+		  			instvalid <= `InstValid;
+		  			if(reg1_data_o[31] == 1'b1) 
+		  			begin
+			    	  cu_npc_op_o <= `NPC_OP_OFFSET;
+			    	  next_inst_in_delayslot_o <= `InDelaySlot;
+			   		end
+				  end
+				default:
+				  begin
+				  end
+			  endcase
+			end
           `EXE_ADDI:
             begin                        //ADDI指令
               wreg_enable_o <= `WriteEnable;
@@ -455,5 +646,16 @@ always @ (*)
         reg2_data_o <= `ZeroWord;
       end
   end
-
+  
+always @ (*) 
+  begin
+	if(rst == `RstEnable) 
+	  begin
+		is_in_delayslot_o <= `NotInDelaySlot;
+	  end 
+	else 
+	  begin
+		  is_in_delayslot_o <= is_in_delayslot_i;		
+	  end
+  end
 endmodule

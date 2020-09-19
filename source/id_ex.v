@@ -3,25 +3,33 @@
 
 module id_ex(
 
-	input	wire										clk,
+	input wire										clk,
 	input wire										rst,
 
 	
-	//从译码阶段传递的信息
+	//浠庤瘧鐮侀樁娈典紶閫掔殑淇℃伅
 	input wire[`AluOpBus]         id_aluop,
 	input wire[`AluSelBus]        id_alusel,
-	input wire[`RegDataBus]           id_reg1,
-	input wire[`RegDataBus]           id_reg2,
+	input wire[`RegDataBus]       id_reg1,
+	input wire[`RegDataBus]       id_reg2,
 	input wire[`RegAddrBus]       id_wreg_addr,
 	input wire                    id_wreg_enable,	
 	
-	//传递到执行阶段的信息
+	input wire[`RegDataBus]       id_link_address,
+	input wire                    id_is_in_delayslot,
+	input wire                    next_inst_in_delayslot_i,
+	
+	//浼犻?掑埌鎵ц闃舵鐨勪俊鎭?
 	output reg[`AluOpBus]         ex_aluop,
 	output reg[`AluSelBus]        ex_alusel,
-	output reg[`RegDataBus]           ex_reg1,
-	output reg[`RegDataBus]           ex_reg2,
+	output reg[`RegDataBus]       ex_reg1,
+	output reg[`RegDataBus]       ex_reg2,
 	output reg[`RegAddrBus]       ex_wreg_addr,
-	output reg                    ex_wreg_enable
+	output reg                    ex_wreg_enable,
+	
+	output reg[`RegDataBus]       ex_link_address,
+    output reg                    ex_is_in_delayslot,
+	output reg                    is_in_delayslot_o
 	
 );
 
@@ -33,6 +41,9 @@ module id_ex(
 			ex_reg2 <= `ZeroWord;
 			ex_wreg_addr <= `NOPRegAddr;
 			ex_wreg_enable <= `WriteDisable;
+			ex_link_address <= `ZeroWord;
+			ex_is_in_delayslot <= `NotInDelaySlot;
+	        is_in_delayslot_o <= `NotInDelaySlot;
 		end else begin		
 			ex_aluop <= id_aluop;
 			ex_alusel <= id_alusel;
@@ -40,6 +51,9 @@ module id_ex(
 			ex_reg2 <= id_reg2;
 			ex_wreg_addr <= id_wreg_addr;
 			ex_wreg_enable <= id_wreg_enable;		
+			ex_link_address <= id_link_address;
+			ex_is_in_delayslot <= id_is_in_delayslot;
+	        is_in_delayslot_o <= next_inst_in_delayslot_i;	
 		end
 	end
 	

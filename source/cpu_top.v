@@ -9,7 +9,7 @@ module cpu(
 wire[`InstAddrBus] pc;
 wire[`InstAddrBus] npc;
 wire[`InstBus]  if_inst_o;
-
+wire[`NPC_OP_LENGTH  - 1:0] cu_npc_op;
 wire[`InstAddrBus] id_pc_i;
 wire[`InstBus] id_inst_i;
 
@@ -20,6 +20,12 @@ wire[`RegDataBus] id_reg1_o;
 wire[`RegDataBus] id_reg2_o;
 wire id_wreg_enable_o;
 wire[`RegAddrBus] id_wreg_addr_o;
+wire next_inst_in_delayslot_o;
+wire[`RegDataBus] link_addr_o;
+wire id_is_in_delayslot;
+
+//连接ID/EX模块的输出与译码阶段ID模块的输入
+wire is_in_delayslot_o;
 
 //连接ID/EX模块的输出与执行阶段EX模块的输入
 wire[`AluOpBus] ex_aluop_i;
@@ -28,7 +34,8 @@ wire[`RegDataBus] ex_reg1_i;
 wire[`RegDataBus] ex_reg2_i;
 wire ex_wreg_enable_i;
 wire[`RegAddrBus] ex_wreg_addr_i;
-
+wire [`RegDataBus] link_address_i;
+wire is_in_delayslot_i;
 //连接执行阶段EX模块的输出与EX/MEM模块的输入
 wire ex_wreg_enable_o;
 wire[`RegAddrBus] ex_wreg_addr_o;
@@ -69,7 +76,7 @@ npc if_npc0(
 .imm16(if_inst_o[15:0]),
 .imm26(if_inst_o[25:0]),
 .reg1_data(reg1_data),
-.cu_npc_op(`NPC_OP_NEXT),
+.cu_npc_op(cu_npc_op),
 .npc(npc)
 );
 
@@ -95,6 +102,8 @@ id id0(
 
      .reg1_data_i(reg1_data),
      .reg2_data_i(reg2_data),
+     
+     .is_in_delayslot_i(is_in_delayslot_o),
 
      //处于执行阶段的指令要写入的目的寄存器信息
      .ex_wreg_i(ex_wreg_enable_o),
@@ -119,7 +128,12 @@ id id0(
      .reg1_data_o(id_reg1_o),
      .reg2_data_o(id_reg2_o),
      .wreg_addr_o(id_wreg_addr_o),
-     .wreg_enable_o(id_wreg_enable_o)
+     .wreg_enable_o(id_wreg_enable_o),
+     
+     .next_inst_in_delayslot_o(next_inst_in_delayslot_o),
+     .cu_npc_op_o(cu_npc_op),
+     .link_addr_o(link_addr_o),
+     .is_in_delayslot_o(id_is_in_delayslot)
    );
 
 //通用寄存器Regfile例化
@@ -149,6 +163,10 @@ id_ex id_ex0(
         .id_reg2(id_reg2_o),
         .id_wreg_addr(id_wreg_addr_o),
         .id_wreg_enable(id_wreg_enable_o),
+        
+        .id_link_address(link_addr_o),
+        .id_is_in_delayslot(id_is_in_delayslot),
+        .next_inst_in_delayslot_i(next_inst_in_delayslot_o),
 
         //传递到执行阶段EX模块的信息
         .ex_aluop(ex_aluop_i),
@@ -156,7 +174,10 @@ id_ex id_ex0(
         .ex_reg1(ex_reg1_i),
         .ex_reg2(ex_reg2_i),
         .ex_wreg_addr(ex_wreg_addr_i),
-        .ex_wreg_enable(ex_wreg_enable_i)
+        .ex_wreg_enable(ex_wreg_enable_i),
+        .ex_link_address(link_address_i),
+        .ex_is_in_delayslot(is_in_delayslot_i),
+        .is_in_delayslot_o(is_in_delayslot_o)
       );
 
 //EX模块
@@ -170,6 +191,8 @@ ex ex0(
      .reg2_i(ex_reg2_i),
      .wreg_addr_i(ex_wreg_addr_i),
      .wreg_enable_i(ex_wreg_enable_i),
+     .link_address_i(link_address_i),
+     .is_in_delayslot_i(is_in_delayslot_i),
 
      //EX模块的输出到EX/MEM模块信息
      .wreg_addr_o(ex_wreg_addr_o),

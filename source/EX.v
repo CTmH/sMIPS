@@ -12,7 +12,9 @@ module ex(
 	input wire[`RegDataBus]           reg2_i,
 	input wire[`RegAddrBus]       wreg_addr_i,
 	input wire                    wreg_enable_i,
-
+	//是否转移、以及link address
+	input wire[`RegDataBus]           link_address_i,
+	input wire                    is_in_delayslot_i,
 	
 	output reg[`RegAddrBus]       wreg_addr_o,
 	output reg                    wreg_enable_o,
@@ -174,6 +176,9 @@ module ex(
 	 	`EXE_RES_SHIFT:
 		begin
 	 		wdata_o <= shift_out;
+	 	end
+	 	`EXE_RES_JUMP_BRANCH:	begin
+	 		wdata_o <= link_address_i;
 	 	end
 		`EXE_RES_MOVE:
 		begin
