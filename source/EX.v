@@ -13,12 +13,14 @@ module ex(
 	input wire[`RegAddrBus]       wreg_addr_i,
 	input wire                    wreg_enable_i,
 	//是否转移、以及link address
-	input wire[`RegDataBus]           link_address_i,
+	input wire[`RegDataBus]       link_address_i,
 	input wire                    is_in_delayslot_i,
 	
 	output reg[`RegAddrBus]       wreg_addr_o,
 	output reg                    wreg_enable_o,
-	output reg[`RegDataBus]						wdata_o
+	output reg[`RegDataBus]		  wdata_o,
+
+	output reg					  stallreq
 	
 );
 
@@ -46,6 +48,10 @@ module ex(
 	assign lt = (aluop_i==`EXE_SLT_OP)?((reg1_i[31]&&!reg2_i[31])?1:(reg1_i[31]&&!reg2_i[31])?0:compute_res[31]):(reg1_i<reg2_i);
 	assign eq = reg1_i==reg2_i;
 
+
+	always @ (*) begin
+		stallreq <= `NoStop;
+	end
 
 	always @ (*) begin
 		if(rst == `RstEnable) begin

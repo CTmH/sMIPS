@@ -6,12 +6,12 @@ module ex_mem(
 
          input wire          clk,
          input wire          rst,
-
+         input wire[5:0]              stall,
 
          //来自执行阶段的信息
          input wire[`RegAddrBus]       ex_wreg_addr,
          input wire                    ex_wreg_enable,
-         input wire[`RegDataBus]      ex_wdata,
+         input wire[`RegDataBus]       ex_wdata,
 
          //送到访存阶段的信息
          output reg[`RegAddrBus]      mem_wreg_addr,
@@ -30,7 +30,13 @@ always @ (posedge clk)
         mem_wreg_enable <= `WriteDisable;
         mem_wdata <= `ZeroWord;
       end
-    else
+    else if(stall[3] == `Stop && stall[4] == `NoStop)
+      begin
+        mem_wreg_addr <= `NOPRegAddr;
+        mem_wreg_enable <= `WriteDisable;
+        mem_wdata <= `ZeroWord;
+      end
+    else if(stall[3]==`NoStop)
       begin
         mem_wreg_addr <= ex_wreg_addr;
         mem_wreg_enable <= ex_wreg_enable;

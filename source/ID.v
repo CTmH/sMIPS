@@ -7,12 +7,12 @@ module id(
          input wire[`InstAddrBus]   pc_i,
          input wire[`InstBus]       inst_i,
 
-         //处于执行阶段的指令要写入的目的寄存器信息
+         //??????锟斤拷?锟斤拷?????锟斤拷?????????????
          input wire                 ex_wreg_i,
          input wire[`RegDataBus]        ex_wdata_i,
          input wire[`RegAddrBus]    ex_wd_i,
 
-         //处于访存阶段的指令要写入的目的寄存器信息
+         //???????锟斤拷?????锟斤拷?????????????
          input wire                    mem_wreg_i,
          input wire[`RegDataBus]           mem_wdata_i,
          input wire[`RegAddrBus]       mem_wd_i,
@@ -20,16 +20,16 @@ module id(
          input wire[`RegDataBus]           reg1_data_i,
          input wire[`RegDataBus]           reg2_data_i,
 
-         //如果上一条指令是转移指令，那么下一条指令在译码的时候is_in_delayslot为true
+         //????????????????????????????????????????is_in_delayslot?true
          input wire                    is_in_delayslot_i,
 
-         //送到regfile的信息
+         //???regfile?????
          output reg                    reg1_read_o,
          output reg                    reg2_read_o,
          output reg[`RegAddrBus]       reg1_addr_o,
          output reg[`RegAddrBus]       reg2_addr_o,
 
-         //送到执行阶段的信息
+         //?????锟斤拷?锟斤拷????
          output reg[`AluOpBus]         aluop_o,
          output reg[`AluSelBus]        alusel_o,
          output reg[`RegDataBus]       reg1_data_o,
@@ -40,7 +40,8 @@ module id(
          output reg                    next_inst_in_delayslot_o,	
          output reg[`NPC_OP_LENGTH  - 1:0]    cu_npc_op_o,     
          output reg[`RegDataBus]       link_addr_o,
-          output reg                    is_in_delayslot_o
+          output reg                    is_in_delayslot_o,
+          output wire                   stallreq
        );
 
 wire[5:0] op = inst_i[31:26];
@@ -63,7 +64,8 @@ reg[`RegDataBus] imm;
 reg instvalid;
 
 wire[`RegDataBus] pc_plus_8;
-assign pc_plus_8 = pc_i + 8;   //保存当前译码指令后面第2条指令的地址
+assign pc_plus_8 = pc_i + 8;   //???锟斤拷????????????2????????
+assign stallreq = `NoStop;
 
 always @ (*)
   begin
@@ -297,7 +299,7 @@ always @ (*)
               endcase
             end
           `EXE_ORI:
-            begin                        //ORI指令
+            begin                        //ORI???
               wreg_enable_o <= `WriteEnable;
               aluop_o <= `EXE_OR_OP;
               alusel_o <= `EXE_RES_LOGIC;
@@ -499,7 +501,7 @@ always @ (*)
 			  endcase
 			end
           `EXE_ADDI:
-            begin                        //ADDI指令
+            begin                        //ADDI???
               wreg_enable_o <= `WriteEnable;
               aluop_o <= `EXE_ADDI_OP;
               alusel_o <= `EXE_RES_ARITHMETIC;
@@ -510,7 +512,7 @@ always @ (*)
               instvalid <= `InstValid;
             end
           `EXE_ADDIU:
-            begin                        //ADDIU指令
+            begin                        //ADDIU???
               wreg_enable_o <= `WriteEnable;
               aluop_o <= `EXE_ADDIU_OP;
               alusel_o <= `EXE_RES_ARITHMETIC;
