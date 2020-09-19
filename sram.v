@@ -6,7 +6,7 @@ module sram (
              input wire        we_n,
              input wire        ub,
              input wire        lb,
-             inout wire [15:0] data,
+             inout wire [15:0] data
              );
    assign MEM_D0 = data[0];
    assign MEM_D1 = data[1];

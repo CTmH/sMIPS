@@ -26,7 +26,7 @@ module bus(
    assign lwdata = wdata[15:0];
    assign rdata[31:16] = hrdata;
    assign rdata[15:0] = lrdata;
-   assign mo_dram = state ? {rw,hwdata,{addr[19:2],1}}:{rw,lwdata,{addr[19:2],0}};
+   assign mo_dram = state ? {rw,hwdata,{addr[19:2],1'b1}}:{rw,lwdata,{addr[19:2],1'b0}};
    assign mi = cs_dram_n ? 16'b0 : mi_dram;
    assign lrdata = cs_dram_n ? 16'b0 : last_mi;
    assign hrdata = mi;
@@ -51,4 +51,3 @@ module bus(
    end
 
 endmodule // bus
-

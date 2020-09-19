@@ -4,7 +4,7 @@ module driver_sram(
             input wire         rst,
             input wire         cs_n, //chip select
             input wire [35:0]  mosi, //slave input
-            output wire [15:0] miso, //slave output
+            output wire [15:0] miso //slave output
             );
    wire [18:0]                addr;
    wire [15:0]                data;
