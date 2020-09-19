@@ -194,7 +194,8 @@ always @ (*)
 						  wreg_enable_o <= `WriteEnable;		
 						  aluop_o <= `EXE_JALR_OP;
 		  				  alusel_o <= `EXE_RES_JUMP_BRANCH;   
-		  				  reg1_read_o <= 1'b1;	reg2_read_o <= 1'b0;
+		  				  reg1_read_o <= 1'b1;	
+		  				  reg2_read_o <= 1'b0;
 		  				  wreg_addr_o <= inst_i[15:11];
 		  				  link_addr_o <= pc_plus_8;		  						
 			              cu_npc_op_o <= `NPC_OP_RS;			           
