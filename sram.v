@@ -50,5 +50,5 @@ module sram (
    assign SRAM_WE_N = we_n;
    assign SRAM_UB = ub;
    assign SRAM_LB = lb;
-   
+
 endmodule
