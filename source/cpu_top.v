@@ -68,6 +68,7 @@ wire[`RegAddrBus] reg2_addr;
 wire[5:0] stall;
 wire stallreq_from_id;
 wire stallreq_from_ex;
+wire[`InstAddrBus] fore_inst_o;
 
 pc if_pc0(
      .clk(clk),
@@ -79,8 +80,8 @@ pc if_pc0(
 
 npc if_npc0(
       .pc(pc),
-      .imm16(if_inst_o[15:0]),
-      .imm26(if_inst_o[25:0]),
+      .imm16(fore_inst_o[15:0]),
+      .imm26(fore_inst_o[25:0]),
       .reg1_data(reg1_data),
       .cu_npc_op(cu_npc_op),
       .npc(npc)
@@ -142,7 +143,8 @@ id id0(
      .link_addr_o(link_addr_o),
      .is_in_delayslot_o(id_is_in_delayslot),
 
-     .stallreq(stallreq_from_id)
+     .stallreq(stallreq_from_id),
+     .fore_inst(fore_inst_o)
    );
 
 //??��????Regfile????

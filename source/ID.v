@@ -41,7 +41,8 @@ module id(
          output reg[`NPC_OP_LENGTH  - 1:0]    cu_npc_op_o,     
          output reg[`RegDataBus]       link_addr_o,
           output reg                    is_in_delayslot_o,
-          output wire                   stallreq
+          output wire                   stallreq,
+          output wire[`InstAddrBus]      fore_inst
        );
 
 wire[5:0] op = inst_i[31:26];
@@ -66,6 +67,7 @@ reg instvalid;
 wire[`RegDataBus] pc_plus_8;
 assign pc_plus_8 = pc_i + 8;   //???��????????????2????????
 assign stallreq = `NoStop;
+assign fore_inst = inst_i;
 
 always @ (*)
   begin
