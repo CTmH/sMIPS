@@ -21,7 +21,7 @@ assign pc_4 = pc + 32'h4;
 assign npc =
        (cu_npc_op == `NPC_OP_NEXT  ) ? pc_4 :                                       // pc + 4
        (cu_npc_op == `NPC_OP_JUMP  ) ? {pc[31:28], imm26, 2'b00} :                  // pc = target
-       (cu_npc_op == `NPC_OP_OFFSET) ? {pc_4 + {{14{imm16[15]}}, {imm16, 2'b00}}} : // pc + 4 + offset
+       (cu_npc_op == `NPC_OP_OFFSET) ? {pc + {{14{imm16[15]}}, {imm16, 2'b00}}} : // pc + offset
        (cu_npc_op == `NPC_OP_RS    ) ? reg1_data :                                  // pc = rs data
        pc_4;                                                                        // fallback mode: pc + 4
 endmodule
