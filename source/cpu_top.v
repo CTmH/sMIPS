@@ -36,15 +36,22 @@ wire ex_wreg_enable_i;
 wire[`RegAddrBus] ex_wreg_addr_i;
 wire [`RegDataBus] link_address_i;
 wire is_in_delayslot_i;
+wire[`InstBus] ex_inst;
 //??????��??EX?????????EX/MEM????????
 wire ex_wreg_enable_o;
 wire[`RegAddrBus] ex_wreg_addr_o;
 wire[`RegDataBus] ex_wreg_data_o;
+wire[`AluOpBus] ex_aluop_o;
+wire[`DataAddrBus] ex_mem_addr_o;
+wire[`DataBus] ex_reg2_o;
 
 //????EX/MEM?????????????MEM????????
 wire mem_wreg_enable_i;
 wire[`RegAddrBus] mem_wreg_addr_i;
 wire[`RegDataBus] mem_wreg_data_i;
+wire[`AluOpBus] mem_aluop_o;
+wire[`DataAddrBus] mem_mem_addr_o;
+wire[`DataBus] mem_reg2_o;
 
 //????????MEM?????????MEM/WB????????
 wire mem_wreg_enable_o;
@@ -175,7 +182,7 @@ id_ex id_ex0(
         .id_reg2(id_reg2_o),
         .id_wreg_addr(id_wreg_addr_o),
         .id_wreg_enable(id_wreg_enable_o),
-
+        .id_inst(fore_inst_o),
         .id_link_address(link_addr_o),
         .id_is_in_delayslot(id_is_in_delayslot),
         .next_inst_in_delayslot_i(next_inst_in_delayslot_o),
@@ -189,7 +196,8 @@ id_ex id_ex0(
         .ex_wreg_enable(ex_wreg_enable_i),
         .ex_link_address(link_address_i),
         .ex_is_in_delayslot(is_in_delayslot_i),
-        .is_in_delayslot_o(is_in_delayslot_o)
+        .is_in_delayslot_o(is_in_delayslot_o),
+        .ex_inst(ex_inst)
       );
 
 //EX???
@@ -203,6 +211,7 @@ ex ex0(
      .reg2_i(ex_reg2_i),
      .wreg_addr_i(ex_wreg_addr_i),
      .wreg_enable_i(ex_wreg_enable_i),
+     .inst_i(ex_inst),
      .link_address_i(link_address_i),
      .is_in_delayslot_i(is_in_delayslot_i),
 
@@ -210,7 +219,9 @@ ex ex0(
      .wreg_addr_o(ex_wreg_addr_o),
      .wreg_enable_o(ex_wreg_enable_o),
      .wdata_o(ex_wreg_data_o),
-
+     .aluop_o(ex_aluop_o),
+     .mem_addr_o(ex_mem_addr_o),
+     .reg2_o(ex_reg2_o),
      .stallreq(stallreq_from_ex)
    );
 
@@ -225,12 +236,18 @@ ex_mem ex_mem0(
          .ex_wreg_enable(ex_wreg_enable_o),
          .ex_wdata(ex_wreg_data_o),
 
+         .ex_aluop(ex_aluop_o),
+         .ex_mem_addr(ex_mem_addr_o),
+         .ex_reg2(ex_reg2_o),
 
          //????????MEM???????
          .mem_wreg_addr(mem_wreg_addr_i),
          .mem_wreg_enable(mem_wreg_enable_i),
-         .mem_wdata(mem_wreg_data_i)
+         .mem_wdata(mem_wreg_data_i),
 
+         .mem_aluop(mem_aluop_o),
+         .mem_mem_addr(mem_mem_addr_o),
+         .mem_reg2(mem_reg2_o)
 
        );
 
@@ -242,11 +259,21 @@ mem mem0(
       .wreg_addr_i(mem_wreg_addr_i),
       .wreg_enable_i(mem_wreg_enable_i),
       .wdata_i(mem_wreg_data_i),
+      
+      .aluop_i(mem_aluop_o),
+      .mem_addr_i(mem_mem_addr_o),
+      .reg2_i(mem_reg2_o),
+      .mem_data_i(),
 
       //???MEM/WB???????
       .wreg_addr_o(mem_wreg_addr_o),
       .wreg_enable_o(mem_wreg_enable_o),
-      .wdata_o(mem_wreg_data_o)
+      .wdata_o(mem_wreg_data_o),
+      .mem_addr_o(),
+      .mem_we_o(),
+      .mem_sel_o(),
+      .mem_data_o(),
+      .mem_ce_o()
     );
 
 //MEM/WB???

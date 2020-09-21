@@ -14,6 +14,7 @@ module id_ex(
          input wire[`RegDataBus]       id_reg2,
          input wire[`RegAddrBus]       id_wreg_addr,
          input wire                    id_wreg_enable,
+         input wire[`InstBus]          id_inst,
 
          input wire[`RegDataBus]       id_link_address,
          input wire                    id_is_in_delayslot,
@@ -29,8 +30,8 @@ module id_ex(
 
          output reg[`RegDataBus]       ex_link_address,
          output reg                    ex_is_in_delayslot,
-         output reg                    is_in_delayslot_o
-
+         output reg                    is_in_delayslot_o,
+         output reg[`InstBus]          ex_inst
        );
 
 always @ (posedge clk)
@@ -69,6 +70,7 @@ always @ (posedge clk)
         ex_link_address <= id_link_address;
         ex_is_in_delayslot <= id_is_in_delayslot;
         is_in_delayslot_o <= next_inst_in_delayslot_i;
+        ex_inst <= id_inst;
       end
   end
 
