@@ -230,7 +230,7 @@ always @ (*)
                           aluop_o<=`EXE_MOVN_OP;
                           alusel_o <= `EXE_RES_MOVE;
                           reg1_read_o <= 1'b1;
-                          reg2_read_o <= 1'b0;
+                          reg2_read_o <= 1'b1;
                         end
                       `EXE_MOVZ:
                         begin
@@ -245,7 +245,7 @@ always @ (*)
                           aluop_o<=`EXE_MOVN_OP;
                           alusel_o <= `EXE_RES_MOVE;
                           reg1_read_o <= 1'b1;
-                          reg2_read_o <= 1'b0;
+                          reg2_read_o <= 1'b1;
                         end
                       `EXE_ADD:
                         begin
