@@ -2,9 +2,22 @@
 `include "consts.vh"
 
 module cpu(
-         input wire clk,
-         input wire rst
-       );
+           input wire         clk,
+           input wire         clk_bus,
+           input wire         rst
+
+           //SRAM IO
+           output wire [18:0] sram_addr,
+           inout wire [15:0]  sram_data,
+           output wire        sram_oe_n,
+           output wire        sram_ce_n,
+           output wire        sram_we_n,
+           output wire        sram_ub,
+           output wire        sram_lb,
+           output wire [7:0]  led,
+           output reg [7:0]   seg_sel,
+           output reg [7:0]   seg_code
+);
 
 wire[`InstAddrBus] pc;
 wire[`InstAddrBus] npc;
@@ -77,6 +90,14 @@ wire stallreq_from_id;
 wire stallreq_from_ex;
 wire[`InstAddrBus] fore_inst_o;
 
+// Bus
+wire            bus_en;
+wire            bus_rw;
+wire [31:0]     mem_addr;
+wire [31:0]     mem_wdata;
+wire [31:0]     mem_rdata;
+wire [3:0]      mem_sel;
+
 // branch prediction
 wire flush_from_id;
 wire flush_to_id;
@@ -84,6 +105,7 @@ wire branch_predict_to_id;
 wire branch_predict_from_if;
 wire[31:0] special_pc;
 wire[31:0] if_branch_predict_addr;
+
 
 pc if_pc0(
      .clk(clk),
@@ -284,6 +306,7 @@ ex_mem ex_mem0(
 
        );
 
+
 //MEM???????
 mem mem0(
       .rst(rst),
@@ -292,7 +315,7 @@ mem mem0(
       .wreg_addr_i(mem_wreg_addr_i),
       .wreg_enable_i(mem_wreg_enable_i),
       .wdata_i(mem_wreg_data_i),
-      
+
       .aluop_i(mem_aluop_o),
       .mem_addr_i(mem_mem_addr_o),
       .reg2_i(mem_reg2_o),
@@ -302,11 +325,11 @@ mem mem0(
       .wreg_addr_o(mem_wreg_addr_o),
       .wreg_enable_o(mem_wreg_enable_o),
       .wdata_o(mem_wreg_data_o),
-      .mem_addr_o(),
-      .mem_we_o(),
-      .mem_sel_o(),
-      .mem_data_o(),
-      .mem_ce_o()
+      .mem_addr_o(mem_addr),
+      .mem_we_o(bus_rw),
+      .mem_sel_o(mem_sel),
+      .mem_data_o(mem_rdata),
+      .mem_ce_o(bus_en)
     );
 
 //MEM/WB???
@@ -335,4 +358,26 @@ stall_control stall_ctrl0(
              .stallreq_from_ex(stallreq_from_ex),
              .stall(stall)
            );
+
+bus bus0(
+         .sck(clk_bus),
+         .rst(rst),
+         .en(bus_en),
+         .rw(bus_rw),
+         .sel(mem_sel),
+         .addr(mem_addr),
+         .wdata(mem_wdata),
+         .rdata(mem_rdata),
+         .sram_addr(sram_addr),
+         .sram_data(sram_data),
+         .sram_oe_n(sram_oe_n),
+         .sram_ce_n(sram_ce_n),
+         .sram_we_n(sram_we_n),
+         .sram_ub(sram_ub),
+         .sram_lb(sram_lb),
+         .led(led),
+         .seg_sel(seg_sel),
+         .seg_code(seg_code)
+         );
+
 endmodule
