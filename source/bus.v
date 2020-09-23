@@ -2,18 +2,10 @@
 module bus(
            input wire         sck,
            input wire         rst,
-           input wire         en,
            input wire         rw,
            input wire [31:0]  addr,
            input wire [31:0]  wdata,
-           output wire [31:0] rdata,
-           output wire [18:0] sram_addr,
-           inout wire [15:0] sram_data,
-           output wire        sram_oe_n,
-           output wire        sram_ce_n,
-           output wire        sram_we_n,
-           output wire        sram_ub,
-           output wire        sram_lb
+           output wire [31:0] rdata
            );
    wire                      cs_dram_n; //data
    wire                      cs_iram_n; //instruction
@@ -28,8 +20,8 @@ module bus(
    reg                       state;
    reg [15:0]                last_mi;
 
-   assign cs_iram_n = ((addr[31:20] == 12'h000) ? 0:1) || (!en);
-   assign cs_dram_n = ((addr[31:20] == 12'h001) ? 0:1) || (!en);
+   assign cs_iram_n = (addr[31:20] == 12'h000) ? 0:1;
+   assign cs_dram_n = (addr[31:20] == 12'h001) ? 0:1;
    assign hwdata = wdata[31:16];
    assign lwdata = wdata[15:0];
    assign rdata[31:16] = hrdata;
@@ -41,19 +33,12 @@ module bus(
 
    //TODO cs_vga_n
 
-   sram sram0(
+   driver_sram dsram0(
                       .sck(sck),
                       .rst(rst),
                       .cs_n(cs_dram_n),
                       .mosi(mo_dram),
-                      .miso(mi_dram),
-                      .sram_addr(sram_addr),
-                      .sram_data(sram_data),
-                      .sram_oe_n(sram_oe_n),
-                      .sram_ce_n(sram_ce_n),
-                      .sram_we_n(sram_we_n),
-                      .sram_ub(sram_ub),
-                      .sram_lb(sram_lb));
+                      .miso(mi_dram));
 
    always @ (posedge sck) begin
       if(rst) begin
