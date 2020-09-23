@@ -22,6 +22,8 @@ module id(
 
          //????????????????????????????????????????is_in_delayslot?true
          input wire                    is_in_delayslot_i,
+         
+         input wire[`AluOpBus]         ex_aluop_i,
 
          //???regfile?????
          output reg                    reg1_read_o,
@@ -66,8 +68,17 @@ reg instvalid;
 
 wire[`RegDataBus] pc_plus_8;
 assign pc_plus_8 = pc_i + 8;   //???锟斤拷????????????2????????
-assign stallreq = `NoStop;
 assign fore_inst = inst_i;
+
+reg stallreq_for_reg1_loadrelate;  //读取的寄存器1是否与上条指令存在load相关
+reg stallreq_for_reg2_loadrelate;  //读取的寄存器2是否与上条指令存在load相关
+wire pre_inst_is_load;  //上一条指令是否为加载指令
+assign stallreq = stallreq_for_reg1_loadrelate | stallreq_for_reg2_loadrelate;
+ assign pre_inst_is_load = ((ex_aluop_i == `EXE_LB_OP) || 
+  							(ex_aluop_i == `EXE_LBU_OP)||
+  							(ex_aluop_i == `EXE_LH_OP) ||
+  							(ex_aluop_i == `EXE_LHU_OP)||
+  							(ex_aluop_i == `EXE_LW_OP)) ? 1'b1 : 1'b0;
 
 always @ (*)
   begin
@@ -671,9 +682,14 @@ always @ (*)
 
 always @ (*)
   begin
+    stallreq_for_reg1_loadrelate <= `NoStop;
     if(rst == `RstEnable)
       begin
         reg1_data_o <= `ZeroWord;
+      end
+    else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg1_addr_o && reg1_read_o == 1'b1)
+      begin
+        stallreq_for_reg1_loadrelate <= `Stop;	
       end
     else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
             && (ex_wd_i == reg1_addr_o))
@@ -701,9 +717,14 @@ always @ (*)
 
 always @ (*)
   begin
+    stallreq_for_reg2_loadrelate <= `NoStop;
     if(rst == `RstEnable)
       begin
         reg2_data_o <= `ZeroWord;
+      end
+    else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg2_addr_o && reg2_read_o == 1'b1)
+      begin
+        stallreq_for_reg2_loadrelate <= `Stop;	
       end
     else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1)
             && (ex_wd_i == reg2_addr_o))
