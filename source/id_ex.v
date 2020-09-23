@@ -7,7 +7,7 @@ module id_ex(
          input wire										rst,
          input wire[5:0]               stall,
 
-         //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¶Î´ï¿½ï¿½Ýµï¿½ï¿½ï¿½Ï¢
+         //´ÓÒëÂë½×¶Î´«µÝµÄÐÅÏ¢
          input wire[`AluOpBus]         id_aluop,
          input wire[`AluSelBus]        id_alusel,
          input wire[`RegDataBus]       id_reg1,
@@ -19,9 +19,8 @@ module id_ex(
          input wire[`RegDataBus]       id_link_address,
          input wire                    id_is_in_delayslot,
          input wire                    next_inst_in_delayslot_i,
-         input wire                    flush_i,
 
-         //ï¿½ï¿½???ï¿½ï¿½Ö´???ï¿½×¶Îµï¿½ï¿½ï¿½???
+         //´«???µ½Ö´???½×¶ÎµÄÐÅ???
          output reg[`AluOpBus]         ex_aluop,
          output reg[`AluSelBus]        ex_alusel,
          output reg[`RegDataBus]       ex_reg1,
@@ -32,8 +31,7 @@ module id_ex(
          output reg[`RegDataBus]       ex_link_address,
          output reg                    ex_is_in_delayslot,
          output reg                    is_in_delayslot_o,
-         output reg[`InstBus]          ex_inst,
-         output reg                    flush_o
+         output reg[`InstBus]          ex_inst
        );
 
 always @ (posedge clk)
@@ -49,7 +47,6 @@ always @ (posedge clk)
         ex_link_address <= `ZeroWord;
         ex_is_in_delayslot <= `NotInDelaySlot;
         is_in_delayslot_o <= `NotInDelaySlot;
-        flush_o <= `FLUSH_NO;
       end
     else if(stall[2] == `Stop && stall[3] == `NoStop)
       begin
@@ -61,7 +58,6 @@ always @ (posedge clk)
         ex_wreg_enable <= `WriteDisable;
         ex_link_address <= `ZeroWord;
         ex_is_in_delayslot <= `NotInDelaySlot;
-        ex_is_in_delayslot <= `FLUSH_NO;
       end
     else if(stall[2] == `NoStop)
       begin
@@ -75,7 +71,6 @@ always @ (posedge clk)
         ex_is_in_delayslot <= id_is_in_delayslot;
         is_in_delayslot_o <= next_inst_in_delayslot_i;
         ex_inst <= id_inst;
-        flush_o <= flush_i;
       end
   end
 
