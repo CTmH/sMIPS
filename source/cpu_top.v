@@ -98,6 +98,15 @@ wire [31:0]     mem_wdata;
 wire [31:0]     mem_rdata;
 wire [3:0]      mem_sel;
 
+// branch prediction
+wire flush_from_id;
+wire flush_to_id;
+wire branch_predict_to_id;
+wire branch_predict_from_if;
+wire[31:0] special_pc;
+wire[31:0] if_branch_predict_addr;
+
+
 pc if_pc0(
      .clk(clk),
      .rst(rst),
@@ -108,10 +117,13 @@ pc if_pc0(
 
 npc if_npc0(
       .pc(pc),
+      .special_pc(special_pc),
       .imm16(fore_inst_o[15:0]),
       .imm26(fore_inst_o[25:0]),
       .reg1_data(reg1_data),
       .cu_npc_op(cu_npc_op),
+      .branch_predict(branch_predict_from_if),
+      .branch_predict_addr(if_branch_predict_addr),
       .npc(npc)
     );
 
@@ -120,14 +132,27 @@ imem imem0(
        .inst(if_inst_o)
      );
 
+branch_predict branch_predict0(
+  .clk(clk),
+  .rst(rst),
+  .pc(pc),
+  .flush(flush_from_id),
+  .inst(if_inst_o),
+  .branch_predict(branch_predict_from_if),
+  .branch_predict_addr(if_branch_predict_addr)
+);
+
+
 if_id if_id0(
         .clk(clk),
         .rst(rst),
         .stall(stall),
         .if_pc(pc),
         .if_inst(if_inst_o),
+        .branch_predict_i(branch_predict_from_if),
         .id_pc(id_pc_i),
-        .id_inst(id_inst_i)
+        .id_inst(id_inst_i),
+        .branch_predict_o(branch_predict_to_id)
       );
 
 //??????ID???
@@ -140,7 +165,9 @@ id id0(
      .reg2_data_i(reg2_data),
 
      .is_in_delayslot_i(is_in_delayslot_o),
-     
+     .branch_predict_i(branch_predict_to_id),
+     .flush_i(flush_to_id),
+
      .ex_aluop_i(ex_aluop_o),
 
      //??????��?��?????��?????????????
@@ -174,7 +201,10 @@ id id0(
      .is_in_delayslot_o(id_is_in_delayslot),
 
      .stallreq(stallreq_from_id),
-     .fore_inst(fore_inst_o)
+     .fore_inst(fore_inst_o),
+
+     .special_pc(special_pc),
+     .flush_o(flush_from_id)
    );
 
 //??��????Regfile????
@@ -209,6 +239,7 @@ id_ex id_ex0(
         .id_link_address(link_addr_o),
         .id_is_in_delayslot(id_is_in_delayslot),
         .next_inst_in_delayslot_i(next_inst_in_delayslot_o),
+        .flush_i(flush_from_id),
 
         //???????��??EX???????
         .ex_aluop(ex_aluop_i),
@@ -220,7 +251,8 @@ id_ex id_ex0(
         .ex_link_address(link_address_i),
         .ex_is_in_delayslot(is_in_delayslot_i),
         .is_in_delayslot_o(is_in_delayslot_o),
-        .ex_inst(ex_inst)
+        .ex_inst(ex_inst),
+        .flush_o(flush_to_id)
       );
 
 //EX???

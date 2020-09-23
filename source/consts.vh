@@ -1,4 +1,4 @@
-//È«¾Ö
+//È«ï¿½ï¿½
 `define RstEnable 1'b1
 `define RstDisable 1'b0
 `define ZeroWord 32'h00000000
@@ -26,7 +26,7 @@
 `define ChipDisable 1'b0
 
 
-//Ö¸Áî
+//Ö¸ï¿½ï¿½
 `define EXE_AND  6'b100100
 `define EXE_OR   6'b100101
 `define EXE_XOR 6'b100110
@@ -128,20 +128,21 @@
 `define EXE_REGIMM_INST 6'b000001
 `define EXE_SPECIAL2_INST 6'b011100
 
-// À©Õ¹Ä£¿é
+// ï¿½ï¿½Õ¹Ä£ï¿½ï¿½
 `define EXT_OP_LENGTH   2          // Length of Signal ExtOp
 `define EXT_OP_DEFAULT  2'b00      // ExtOp default value
 `define EXT_OP_SFT16    2'b01      // LUI: Shift Left 16
 `define EXT_OP_SIGNED   2'b10      // ADDIU: `imm16` signed extended to 32 bit
 `define EXT_OP_UNSIGNED 2'b11      // LW, SW: `imm16` unsigned extended to 32 bit
 
-// NPCÄ£¿é
+// NPCÄ£ï¿½ï¿½
 `define NPC_OP_LENGTH   3          // Length of NPCOp
 `define NPC_OP_DEFAULT  3'b000     // NPCOp default value
 `define NPC_OP_NEXT     3'b001     // Next instruction: {PC + 4}
 `define NPC_OP_JUMP     3'b010     // Next instruction: {PC[31:28], instr_index, 2'b00}
 `define NPC_OP_OFFSET   3'b011     // Next instruction: {PC + 4 + offset}
 `define NPC_OP_RS       3'b100     // Next instruction: {rs}
+`define NPC_OP_SPEC     3'b101     // Next instruction: special
 
 //AluOp
 `define EXE_AND_OP   8'b00100100
@@ -255,20 +256,20 @@
 `define EXE_RES_NOP 3'b000
 
 
-//Ö¸Áî´æ´¢Æ÷inst_rom
+//Ö¸ï¿½ï¿½æ´¢ï¿½ï¿½inst_rom
 `define InstAddrBus 31:0
 `define InstBus 31:0
 `define InstMemNum 131071
 `define InstMemNumLog2 17
 
-//Êý¾Ý´æ´¢Æ÷data_ram
+//ï¿½ï¿½ï¿½Ý´æ´¢ï¿½ï¿½data_ram
 `define DataAddrBus 31:0
 `define DataBus 31:0
 `define DataMemNum 131071
 `define DataMemNumLog2 17
 `define ByteWidth 7:0
 
-//Í¨ÓÃ¼Ä´æÆ÷regfile
+//Í¨ï¿½Ã¼Ä´ï¿½ï¿½ï¿½regfile
 `define RegAddrBus 4:0
 `define RegDataBus 31:0
 `define RegWidth 32
@@ -278,7 +279,7 @@
 `define RegNumLog2 5
 `define NOPRegAddr 5'b00000
 
-//³ý·¨div
+//ï¿½ï¿½ï¿½ï¿½div
 `define DivFree 2'b00
 `define DivByZero 2'b01
 `define DivOn 2'b10
@@ -288,11 +289,18 @@
 `define DivStart 1'b1
 `define DivStop 1'b0
 
-//CP0¼Ä´æÆ÷µØÖ·
-`define CP0_REG_COUNT    5'b01001        //¿É¶ÁÐ´
-`define CP0_REG_COMPARE    5'b01011      //¿É¶ÁÐ´
-`define CP0_REG_STATUS    5'b01100       //¿É¶ÁÐ´
-`define CP0_REG_CAUSE    5'b01101        //Ö»¶Á
-`define CP0_REG_EPC    5'b01110          //¿É¶ÁÐ´
-`define CP0_REG_PrId    5'b01111         //Ö»¶Á
-`define CP0_REG_CONFIG    5'b10000       //Ö»¶Á
+//CP0ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+`define CP0_REG_COUNT    5'b01001        //ï¿½É¶ï¿½Ð´
+`define CP0_REG_COMPARE    5'b01011      //ï¿½É¶ï¿½Ð´
+`define CP0_REG_STATUS    5'b01100       //ï¿½É¶ï¿½Ð´
+`define CP0_REG_CAUSE    5'b01101        //Ö»ï¿½ï¿½
+`define CP0_REG_EPC    5'b01110          //ï¿½É¶ï¿½Ð´
+`define CP0_REG_PrId    5'b01111         //Ö»ï¿½ï¿½
+`define CP0_REG_CONFIG    5'b10000       //Ö»ï¿½ï¿½
+
+//branch prediction consts
+`define BP_YES   1'b1
+`define BP_NO    1'b0
+
+`define FLUSH_YES 1'b1
+`define FLUSH_NO  1'b0
