@@ -24,6 +24,8 @@ module id(
          input wire                    is_in_delayslot_i,
          input wire                    branch_predict_i,
          input wire                    flush_i,
+         
+         input wire[`AluOpBus]         ex_aluop_i,
 
          //???regfile?????
          output reg                    reg1_read_o,
@@ -74,6 +76,16 @@ wire[`RegDataBus] pc_plus_8;
 assign pc_plus_8 = pc_i + 8;   //???��????????????2????????
 assign stallreq = `NoStop;
 assign fore_inst = inst_sel;
+
+reg stallreq_for_reg1_loadrelate;  //��ȡ�ļĴ���1�Ƿ�������ָ�����load���
+reg stallreq_for_reg2_loadrelate;  //��ȡ�ļĴ���2�Ƿ�������ָ�����load���
+wire pre_inst_is_load;  //��һ��ָ���Ƿ�Ϊ����ָ��
+assign stallreq = stallreq_for_reg1_loadrelate | stallreq_for_reg2_loadrelate;
+ assign pre_inst_is_load = ((ex_aluop_i == `EXE_LB_OP) || 
+  							(ex_aluop_i == `EXE_LBU_OP)||
+  							(ex_aluop_i == `EXE_LH_OP) ||
+  							(ex_aluop_i == `EXE_LHU_OP)||
+  							(ex_aluop_i == `EXE_LW_OP)) ? 1'b1 : 1'b0;
 
 always @ (*)
   begin
@@ -825,9 +837,14 @@ always @ (*)
 
 always @ (*)
   begin
+    stallreq_for_reg1_loadrelate <= `NoStop;
     if(rst == `RstEnable)
       begin
         reg1_data_o <= `ZeroWord;
+      end
+    else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg1_addr_o && reg1_read_o == 1'b1)
+      begin
+        stallreq_for_reg1_loadrelate <= `Stop;	
       end
     else if((reg1_read_o == 1'b1) && (ex_wreg_i == 1'b1)
             && (ex_wd_i == reg1_addr_o))
@@ -855,9 +872,14 @@ always @ (*)
 
 always @ (*)
   begin
+    stallreq_for_reg2_loadrelate <= `NoStop;
     if(rst == `RstEnable)
       begin
         reg2_data_o <= `ZeroWord;
+      end
+    else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg2_addr_o && reg2_read_o == 1'b1)
+      begin
+        stallreq_for_reg2_loadrelate <= `Stop;	
       end
     else if((reg2_read_o == 1'b1) && (ex_wreg_i == 1'b1)
             && (ex_wd_i == reg2_addr_o))

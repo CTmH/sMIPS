@@ -143,9 +143,10 @@ id id0(
      .reg2_data_i(reg2_data),
 
      .is_in_delayslot_i(is_in_delayslot_o),
-
      .branch_predict_i(branch_predict_to_id),
      .flush_i(flush_to_id),
+
+     .ex_aluop_i(ex_aluop_o),
 
      //??????��?��?????��?????????????
      .ex_wreg_i(ex_wreg_enable_o),
