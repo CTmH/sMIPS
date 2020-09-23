@@ -13,7 +13,10 @@ module cpu(
            output wire        sram_ce_n,
            output wire        sram_we_n,
            output wire        sram_ub,
-           output wire        sram_lb
+           output wire        sram_lb,
+           output wire [7:0]  led,
+           output reg [7:0]   seg_sel,
+           output reg [7:0]   seg_code
 );
 
 wire[`InstAddrBus] pc;
@@ -339,7 +342,10 @@ bus bus0(
          .sram_ce_n(sram_ce_n),
          .sram_we_n(sram_we_n),
          .sram_ub(sram_ub),
-         .sram_lb(sram_lb)
+         .sram_lb(sram_lb),
+         .led(led),
+         .seg_sel(seg_sel),
+         .seg_code(seg_code)
          );
 
 endmodule
