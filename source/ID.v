@@ -416,11 +416,11 @@ always @ (*)
                       flush_o <= `FLUSH_YES;
                       cu_npc_op_o <= `NPC_OP_OFFSET;
                     end
-                  else
-                    begin
-                      cu_npc_op_o <= `NPC_OP_SPEC;
-                      special_pc <= {pc_i + {{14{inst_sel[15]}}, {inst_sel[15:0]+16'b1, 2'b00}}};
-                    end
+                  // else
+                  //   begin
+                  //     cu_npc_op_o <= `NPC_OP_SPEC;
+                  //     special_pc <= {pc_i + {{14{inst_sel[15]}}, {inst_sel[15:0]+16'b1, 2'b00}}};
+                  //   end
                 end
               else
                 begin

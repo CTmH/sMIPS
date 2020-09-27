@@ -27,7 +27,7 @@ module stall_control(
 
          input wire                   stallreq_from_id,
 
-         //À´×ÔÖ´ÐÐ½×¶ÎµÄÔÝÍ£ÇëÇó
+         //ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð½×¶Îµï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
          input wire                   stallreq_from_ex,
          output reg[5:0]              stall
 
