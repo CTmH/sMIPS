@@ -4,7 +4,7 @@
 module cpu(
            input wire         clk,
            input wire         clk_bus,
-           input wire         rst
+           input wire         rst,
 
            //SRAM IO
            output wire [18:0] sram_addr,
@@ -15,8 +15,13 @@ module cpu(
            output wire        sram_ub,
            output wire        sram_lb,
            output wire [7:0]  led,
-           output reg [7:0]   seg_sel,
-           output reg [7:0]   seg_code
+           output wire [7:0]   seg_sel,
+           output wire [7:0]   seg_code,
+           output wire [3:0] r,
+           output wire [3:0] g,
+           output wire [3:0] b,
+           output wire hs,
+           output wire vs
 );
 
 wire[`InstAddrBus] pc;
@@ -128,6 +133,7 @@ npc if_npc0(
     );
 
 imem imem0(
+       .rst(rst),
        .addr(pc),
        .inst(if_inst_o)
      );
@@ -319,7 +325,7 @@ mem mem0(
       .aluop_i(mem_aluop_o),
       .mem_addr_i(mem_mem_addr_o),
       .reg2_i(mem_reg2_o),
-      .mem_data_i(),
+      .mem_data_i(mem_rdata),
 
       //???MEM/WB???????
       .wreg_addr_o(mem_wreg_addr_o),
@@ -328,7 +334,7 @@ mem mem0(
       .mem_addr_o(mem_addr),
       .mem_we_o(bus_rw),
       .mem_sel_o(mem_sel),
-      .mem_data_o(mem_rdata),
+      .mem_data_o(mem_wdata),
       .mem_ce_o(bus_en)
     );
 
@@ -377,7 +383,12 @@ bus bus0(
          .sram_lb(sram_lb),
          .led(led),
          .seg_sel(seg_sel),
-         .seg_code(seg_code)
+         .seg_code(seg_code),
+         .hs(hs),
+         .vs(vs),
+         .r(r),
+         .g(g),
+         .b(b)
          );
 
 endmodule

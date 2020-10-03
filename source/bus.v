@@ -16,8 +16,13 @@ module bus(
            output wire        sram_ub,
            output wire        sram_lb,
            output wire [7:0]  led,
-           output reg [7:0]   seg_sel,
-           output reg [7:0]   seg_code
+           output wire [7:0]   seg_sel,
+           output wire [7:0]   seg_code,
+           output wire [3:0] r,
+           output wire [3:0] g,
+           output wire [3:0] b,
+           output wire hs,
+           output wire vs
            );
    wire                      cs_dram_n; //data
    wire                      cs_iram_n; //instruction
@@ -37,10 +42,12 @@ module bus(
    wire [7:0]                mi_led;
    wire [31:0]               mo_seg;
    wire [31:0]               mi_seg;
+   wire [35:0]               mo_vga;
 
    assign cs_iram_n = ((addr[31:20] == 12'h000) ? 0:1) || (!en);
    assign cs_dram_n = ((addr[31:20] == 12'h001) ? 0:1) || (!en);
-   assign cs_led_n = ((addr[31:20] == 12'h010) ? 0:1) || (!en);
+   assign cs_led_n = ((addr[31:20] == 12'h002) ? 0:1) || (!en);
+   assign cs_seg_n = ((addr[31:20] == 12'h003) ? 0:1) || (!en);
 
    assign rdata[31:16] = (!cs_dram_n) ? hrdata:(
                          (!cs_led_n) ? {mi_led,mi_led}:
@@ -56,15 +63,14 @@ module bus(
    assign lrdata = cs_dram_n ? 16'b0 : last_mi;
    assign hrdata = mi;
 
-   assign mo_led = sel[0] ? wdata[0:7]:(
-                   sel[1] ? wdata[8:15]:(
-                   sel[2] ? wdata[16:23]:(
-                   sel[3] ? wdata[24:31]:7'b0)));
+   assign mo_led = sel[0] ? wdata[7:0]:(
+                   sel[1] ? wdata[15:8]:(
+                   sel[2] ? wdata[23:16]:(
+                   sel[3] ? wdata[31:24]:7'b0)));
 
    assign mo_seg = wdata;
-
-
-   //TODO cs_vga_n
+   
+   assign mo_vga = (addr[31:20] == 12'h004) ? {1'b1,lwdata,{addr[19:2]},1'b1}:36'b0;
 
    sram sram0(
               .sck(sck),
@@ -86,6 +92,7 @@ module bus(
       end
       else begin
          state <= ~state;
+        // state <= 1'b1;
          last_mi <= mi;
       end
    end
@@ -108,6 +115,16 @@ module bus(
             .miso(mi_seg),
             .seg_sel(seg_sel),
             .seg_code(seg_code));
+            
+//   vga_char_display vga0 (
+//            .clk(clk),
+//            .rst(rst),
+//            .in_w_data(indata),
+//            .hs(hs),
+//            .vs(vs),
+//            .r(r),
+//            .g(g),
+//            .b(b));
 
 
 endmodule // bus

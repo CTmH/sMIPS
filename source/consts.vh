@@ -259,7 +259,7 @@
 //ָ��洢��inst_rom
 `define InstAddrBus 31:0
 `define InstBus 31:0
-`define InstMemNum 131071
+`define InstMemNum 256
 `define InstMemNumLog2 17
 
 //���ݴ洢��data_ram
