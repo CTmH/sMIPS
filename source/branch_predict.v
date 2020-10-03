@@ -30,7 +30,12 @@ module branch_predict(
         output wire branch_predict,
         output wire[31:0] branch_predict_addr
     );
-    reg history;
+    reg      pred;
+    reg[1:0] history;
+    parameter STRONG_YES=2'b11;
+    parameter WEAK_YES=2'b10;
+    parameter WEAK_NO=2'b01;
+    parameter STRONG_NO=2'b00;
 
     wire[5:0] opcode=inst[31:26];
     wire[4:0] seg_rt=inst[20:16];
@@ -46,18 +51,43 @@ module branch_predict(
     assign inst_bltzal    = (opcode == `EXE_REGIMM_INST && seg_rt==`EXE_BLTZAL ) ? 1 : 0;
 
     wire[15:0] imm16=inst[15:0];
-    // 默认不跳�?
-    assign branch_predict = (inst_beq||inst_bne||inst_bgtz||inst_blez||inst_bgez||inst_bgezal||inst_bltz||inst_bltzal)?history:`BP_NO;
+    // 默认不跳�?
+    assign branch_predict = (inst_beq||inst_bne||inst_bgtz||inst_blez||inst_bgez||inst_bgezal||inst_bltz||inst_bltzal)?history[1]:`BP_NO;
     assign branch_predict_addr = {pc + 4 + {{14{imm16[15]}}, {imm16, 2'b00}}};
+
+    always @(posedge clk)
+    begin
+        if(inst_beq||inst_bne||inst_bgtz||inst_blez||inst_bgez||inst_bgezal||inst_bltz||inst_bltzal)
+        begin
+            pred<=1'b1;
+        end else begin
+            pred<=1'b0;
+        end
+    end
 
     always @(clk)
     begin
         if(rst==`RstEnable)begin
-            history<=1'b0;
+            history<=2'b00;
+            pred<=1'b0;
         end else begin
             if(clk) begin  // 人工pose_edge
-                if(flush) begin  // 预测失败，反转预�?
-                  history=~history;
+                if(pred&&flush) begin  // 预测失败，反转预�?
+                  case (history)
+                      STRONG_YES: history<=WEAK_YES;
+                      WEAK_YES: history<=WEAK_NO;
+                      WEAK_NO: history<=WEAK_YES;
+                      STRONG_NO: history<=WEAK_NO;
+                      default: history<=STRONG_NO;
+                  endcase
+                end else begin
+                  case (history)
+                      STRONG_YES: history<=STRONG_YES;
+                      WEAK_YES: history<=STRONG_YES;
+                      WEAK_NO: history<=STRONG_NO;
+                      STRONG_NO: history<=STRONG_NO;
+                      default: history<=STRONG_NO;
+                  endcase
                 end
             end
         end
