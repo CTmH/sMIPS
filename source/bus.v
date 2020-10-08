@@ -25,7 +25,6 @@ module bus(
            output wire vs
            );
    wire                      cs_dram_n; //data
-   wire                      cs_iram_n; //instruction
    wire                      cs_vga_n;
    wire                      cs_led_n;
    wire                      cs_seg_n;
@@ -44,10 +43,11 @@ module bus(
    wire [31:0]               mi_seg;
    wire [35:0]               mo_vga;
 
-   assign cs_iram_n = ((addr[31:20] == 12'h000) ? 0:1) || (!en);
+   //12'h000 for instruction
    assign cs_dram_n = ((addr[31:20] == 12'h001) ? 0:1) || (!en);
    assign cs_led_n = ((addr[31:20] == 12'h002) ? 0:1) || (!en);
    assign cs_seg_n = ((addr[31:20] == 12'h003) ? 0:1) || (!en);
+   assign cs_vga_n = ((addr[31:20] == 12'h004) ? 0:1) || (!en);
 
    assign rdata[31:16] = (!cs_dram_n) ? hrdata:(
                          (!cs_led_n) ? {mi_led,mi_led}:
@@ -70,7 +70,7 @@ module bus(
 
    assign mo_seg = wdata;
    
-   assign mo_vga = (addr[31:20] == 12'h004) ? {1'b1,lwdata,{addr[19:2]},1'b1}:36'b0;
+   assign mo_vga = {1'b1,lwdata,{addr[19:2]},1'b0};
 
    sram sram0(
               .sck(sck),
@@ -116,15 +116,15 @@ module bus(
             .seg_sel(seg_sel),
             .seg_code(seg_code));
             
-//   vga_char_display vga0 (
-//            .clk(clk),
-//            .rst(rst),
-//            .in_w_data(indata),
-//            .hs(hs),
-//            .vs(vs),
-//            .r(r),
-//            .g(g),
-//            .b(b));
+   vga_char_display vga0 (
+            .clk(clk),
+            .rst(rst),
+            .in_w_data(mo_vga),
+            .hs(hs),
+            .vs(vs),
+            .r(r),
+            .g(g),
+            .b(b));
 
 
 endmodule // bus

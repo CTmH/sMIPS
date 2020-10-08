@@ -19,7 +19,6 @@ module sram(
    assign rw = mosi[35];
    assign miso = rw ? 16'b0:sram_data;
    assign sram_data = rw ? mosi[34:19]:{16{1'bz}};
-   //assign sram_data = rw ? mosi[34:19]:sram_data;
    assign sram_addr = mosi[18:0];
    assign sram_oe_n = cs_n | rw;
    assign sram_ce_n = cs_n;
